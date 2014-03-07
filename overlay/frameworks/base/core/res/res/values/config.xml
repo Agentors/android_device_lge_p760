@@ -72,4 +72,8 @@
      <bool name="config_ui_enableFadingMarquee">false</bool>
 
 	<bool name="config_enableWifiDisplay">true</bool>
+
+ <!-- Device type information conforming to Annex B format in WiFi Direct specification.
+The default represents a dual-mode smartphone -->
+    <string translatable="false" name="config_wifi_p2p_device_type">10-0050F204-5</string>
 </resources>

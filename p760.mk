@@ -20,6 +20,7 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/fstab.u2:root/fstab.lgep760board
 
 PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/p2p_supplicant.conf:system/etc/wifi/p2p_supplicant.conf \
     $(LOCAL_PATH)/configs/p2p_supplicant_overlay.conf:system/etc/wifi/p2p_supplicant_overlay.conf \
     $(LOCAL_PATH)/configs/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
     $(LOCAL_PATH)/configs/wpa_supplicant_overlay.conf:system/etc/wifi/wpa_supplicant_overlay.conf  \
@@ -65,6 +66,7 @@ frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions
     frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
     frameworks/native/data/etc/android.hardware.nfc.xml:system/etc/permissions/android.hardware.nfc.xml \
     frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
+	frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.hardware.audio.low_latency.xml:system/etc/permissions/android.hardware.audio.low_latency.xml 
 
 ## GPS
@@ -72,9 +74,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/gps_brcm_conf.xml:system/etc/gps_brcm_conf.xml \
     $(LOCAL_PATH)/configs/gps.conf:system/etc/gps.conf
 
-## Apks
-PRODUCT_COPY_FILES += \
-$(LOCAL_PATH)/apk/com.bigeyes0x0.trickstermod.apk:system/app/com.bigeyes0x0.trickstermod.apk
 
 $(call inherit-product, build/target/product/full.mk)
 
@@ -103,6 +102,12 @@ PRODUCT_PACKAGES += \
     libnfc_jni \
     Nfc \
     Tag
+
+# Artur Zaleski (artas182x) custom
+PRODUCT_PACKAGES += LgeL9Parts
+PRODUCT_COPY_FILES += \
+$(LOCAL_PATH)/fs/system/apk/com.bigeyes0x0.trickstermod.apk:system/app/com.bigeyes0x0.trickstermod.apk \
+$(LOCAL_PATH)/fs/system/etc/init.d/55frandom:system/etc/init.d/55frandom
 
 FRAMEWORKS_BASE_SUBDIRS += \
 	$(addsuffix /java, omapmmlib )

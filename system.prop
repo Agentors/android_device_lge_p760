@@ -1,5 +1,5 @@
 #
-# system.prop for p920
+# system.prop for p760
 #
 
 ## Enable OMAP stuffs
@@ -59,4 +59,7 @@ ro.sf.hwrotation=0
 ro.media.enc.jpeg.quality=100 
 ro.media.dec.jpeg.memcap=8000000
 ro.media.enc.hprof.vid.bps=8000000
-wifi.supplicant_scan_interval=300
+wifi.supplicant_scan_interval=360
+
+# Enable MDP swaprect
+debug.sf.swaprect=1

@@ -28,10 +28,12 @@ public class DevicePreferenceActivity extends PreferenceFragment {
     public static final String KEY_GPU_OVERCLOCK = "gpu_overclock";
     public static final String KEY_IVA_OVERCLOCK = "iva_overclock";
     public static final String KEY_MAX_SLEEP_FREQUENCY = "max_sleep_frequency";
+    public static final String KEY_HP_BOOST = "hp_boost";
 
     private ListPreference mGpuOverclock;
     private ListPreference mIvaOverclock;
     private ListPreference mMaxSleepFrequency;
+    private ListPreference mHpBoost;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,5 +55,10 @@ public class DevicePreferenceActivity extends PreferenceFragment {
         mMaxSleepFrequency.setEnabled(MaxSleepFrequency.isSupported());
         mMaxSleepFrequency.setOnPreferenceChangeListener(new MaxSleepFrequency());
         MaxSleepFrequency.updateSummary(mMaxSleepFrequency, Integer.parseInt(mMaxSleepFrequency.getValue()));
+
+	mHpBoost = (ListPreference) findPreference(KEY_HP_BOOST);
+        mHpBoost.setEnabled(HpBoost.isSupported());
+        mHpBoost.setOnPreferenceChangeListener(new HpBoost());
+        HpBoost.updateSummary(mHpBoost, Integer.parseInt(mHpBoost.getValue()));
     }
 }

@@ -24,6 +24,13 @@
             android:entries="@array/max_sleep_frequency_entries"
             android:entryValues="@array/max_sleep_frequency_values"
             android:defaultValue="0" />
+
+	 <ListPreference
+            android:key="hp_boost"
+            android:title="@string/hp_boost_title"
+            android:entries="@array/hp_boost_entries"
+            android:entryValues="@array/hp_boost_values"
+            android:defaultValue="0" />
     
     </PreferenceCategory>
 

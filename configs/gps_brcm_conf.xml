@@ -4,12 +4,12 @@
 <glgps xmlns="http://www.glpals.com/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.glpals.com/ glconfig.xsd" >
   <!--HAL Confguration: Please make sure to split the hal configuration when it's bigger than 1K bytes. -->
   <hal 
-	  acPortName="/dev/ttyO2" lBaudRate="115200"  acLogEnabled="false" acLogDirectory="/sdcard/gps/log"
-       enhanced-assisted="false" acLogEnableInitState="false"
+	  acPortName="/dev/ttyO2" lBaudRate="460800"  cLogEnabled="true" acLogDirectory="/sdcard/gps/log"
+       enhanced-assisted="false" cLogEnableInitState="false"
               
-       arp-supl-enable="true" arp-supl-cap-msb="true" arp-supl-cap-msa="true" arp-supl-cap-ecid="false"
+       arp-supl-enable="true" arp-supl-cap-msb="true" arp-supl-cap-msa="true" arp-supl-cap-ecid="true"
 	   acSuplServer="supl.google.com" SuplPort="7276" tlsCertPath="/system/etc/cert/lge.cer" 
-       tlsStopForInvPath="true" arp-supl-use-apn="false" arp-supl-interface-device="rmnet0"
+       tlsStopForInvPath="true" arp-supl-use-apn="true" arp-supl-interface-device="rmnet0"
        ReAidingType="3" ReAidingRetryIntervalSec="10" ReAidingIntervalSec="1800"
        LbsEnable="true" LbsLocal="false" LbsServer="BCMLS2.glpals.com" LbsPort="7275"
        LbsSyncLto="true" LbsSyncCells="false" ltoFileName="lto.dat"
@@ -46,18 +46,15 @@
        BrcmRFclkDiv="21"
        BrcmRFclkRefHz="26000000"
        pps-enable="false" pps-offset-madb shell chmod 777 /system/bin/gpsd/glgps_tmp
-pps_offset_ms="0" pps-width-ns="100" 
+s="0" pps-width-ns="100" 
   -->
 
   <gll 
        LogPriMask="LOG_INFO"
        LogFacMask="LOG_GLLAPI | LOG_NMEA | LOG_RAWDATA | LOG_DEVKF " 
        FrqPlan="FRQ_PLAN_26MHZ_2PPM_26MHZ_300PPB"   
-       RfType="GL_RF_47511_BRCM_EXT_LNA"
-       psf-not-connected="true"
-       WarmStandbyTimeout1Seconds="10"
-       WarmStandbyTimeout2Seconds="15"
-
+       RfType="GL_RF_47511_BRCM_EXT_LNA"   
+       psf-not-connected="true"   
   />
 
   <gll>  

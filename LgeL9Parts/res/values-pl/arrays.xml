@@ -39,4 +39,14 @@
         <item>1008000</item>
     </string-array>
 
+	    <string-array name="hp_boost_entries">
+	<item>Wyłącz</item>
+        <item>Włącz</item>
+    </string-array>
+
+    <string-array name="hp_boost_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
 </resources>

@@ -7,5 +7,6 @@
     <string name="gpu_overclock_title">Maximum GPU Clock Speed</string>
     <string name="iva_overclock_title">Maximum IVA Clock Speed</string>
     <string name="max_sleep_frequency_title">Maximum Screen-Off Frequency</string>
+	<string name="hp_boost_title">Headphone boost</string>
 
 </resources>
