@@ -66,14 +66,14 @@ frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions
     frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
     frameworks/native/data/etc/android.hardware.nfc.xml:system/etc/permissions/android.hardware.nfc.xml \
     frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
-	frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
+    frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.hardware.audio.low_latency.xml:system/etc/permissions/android.hardware.audio.low_latency.xml 
 
 ## GPS
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/gps_brcm_conf.xml:system/etc/gps_brcm_conf.xml \
-    $(LOCAL_PATH)/configs/gps.conf:system/etc/gps.conf
-
+    $(LOCAL_PATH)/configs/gps.conf:system/etc/gps.conf \
+	$(LOCAL_PATH)/configs/SuplRootCert:system/etc/SuplRootCert
 
 $(call inherit-product, build/target/product/full.mk)
 
@@ -108,6 +108,10 @@ PRODUCT_PACKAGES += LgeL9Parts
 PRODUCT_COPY_FILES += \
 $(LOCAL_PATH)/fs/system/apk/com.bigeyes0x0.trickstermod.apk:system/app/com.bigeyes0x0.trickstermod.apk \
 $(LOCAL_PATH)/fs/system/etc/init.d/55frandom:system/etc/init.d/55frandom
+
+# Sgx modules
+PRODUCT_COPY_FILES += \
+device/lge/p760/system/lib/mdoules/pvrsrvkm_sgx540_120.ko:system/lib/modules/pvrsrvkm_sgx540_120.ko
 
 FRAMEWORKS_BASE_SUBDIRS += \
 	$(addsuffix /java, omapmmlib )

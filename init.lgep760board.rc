@@ -1,18 +1,18 @@
 import init.p760.usb.rc
 
 on early-init
-    # create mountpoints
     chmod 0701 /mnt/media_rw
-    # Set permissions for persist partition
     mkdir /storage 0050 system sdcard_r
-    mkdir /persist 0500 system system
+# Immersion
+    export VIBE_PIPE_PATH /dev/pipes
+# Immersion
+    mkdir /dev/pipes 0771 shell shell
+
+# LGE_CHANGE [jugwan.eom@lge.com] for hidden set configuration
     chown system system /sys/module/lge_handle_panic/parameters/hidden_reset_enable
     chmod 660 /sys/module/lge_handle_panic/parameters/hidden_reset_enable
 
-on init
-
-
-    #External storage directories
+#External storage directories
     mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
 
 
@@ -27,42 +27,65 @@ on init
     symlink /storage/sdcard0 /mnt/sdcard
     symlink /storage/sdcard0 /storage/sdcard
 
+on early-fs
+    mkdir /dvp 0771 system system
+    mkdir /persist 0771 system system
+    mkdir /mpt 0775 system system
+
 on fs
     mount_all ./fstab.lgep760board
 # disable FUSE property value
     setprop ro.crypto.fuse_sdcard true
 
-    ## This needs to run ASAP to set up the framebuffer before zygote kicks in
-    start pvrsrvinit
-
 on post-fs-data
-    mkdir /data/lgdrm 0770 lgdrm lgdrm_acc
-    chown root system /data/dontpanic
-    chmod 0775 /data/dontpanic
+    chown system system /dvp
+    chmod 0771 /dvp
 
     chown system system /persist
     chmod 0771 /persist
+
+    chown system system /mpt
+    chmod 0775 /mpt
 
     mkdir /data/misc/wifi 0775 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
     mkdir /data/misc/wifi/softap 0771 wifi wifi
     mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
-    mkdir /data/misc/dhcp 0775 dhcp dhcp
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
     chmod 0666 /data/misc/wifi/wpa_supplicant.conf
     chmod 0775 /data/misc/wifi
-# Create Directory for HDCP
+
+# wifi fw path file
+    write /data/misc/wifi/fw_path 0
+    chown wifi wifi /data/misc/wifi/fw_path
+    chmod 0660 /data/misc/wifi/fw_path
+
+# create directory for lgdrm
+    mkdir /data/lgdrm 0770 lgdrm lgdrm_acc
+
+# LGE_CHANGE_S make drm partition mount point, drm partion will be mounted here   
+	mkdir /persist-lg 0771 system system
+# LGE_CHANGE_E make drm partition mount point
+
+# LGE_CHANGE_S make lgdrm, divxdrm directory in drm partion
+    chown system system /persist-lg
+    chmod 0771 /persist-lg   
+    mkdir /persist-lg/lgdrm 0770 lgdrm lgdrm_acc
+    chown lgdrm lgdrm_acc /persist-lg/lgdrm
+    chmod 0770 /persist-lg/lgdrm
+
+# create directory for DRM plug-ins - give drm the read/write access to
+    # the following directory.
+    mkdir /data/drm 0770 drm drm
+
+# hdcp
     mkdir /persist/mhl 0770 radio radio
     chown system system /dev/hdcp
     chmod 0644 /dev/hdcp
 
-# Hardware tunable perms
-    chown root system /sys/devices/omapdss/display0/gamma_tuning
-    chown root system /sys/devices/platform/tspdrv/nforce_timed
-    chmod 0664 /sys/devices/omapdss/display0/gamma_tuning
-    chmod 0664 /sys/devices/platform/tspdrv/nforce_timed
-    restorecon /sys/devices/omapdss/display0/gamma_tuning
-    restorecon /sys/devices/platform/tspdrv/nforce_timed
+# busybox binary
+    chmod 0777 /system/xbin/busybox
 
 # Create Directory for widevine
     mkdir /persist/widevine 0770 drm system
@@ -71,56 +94,39 @@ on post-fs-data
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
     mkdir /data/media 0775 media_rw media_rw
     chown media_rw media_rw /data/media
+	
+# add symlink for HDCP key
+    symlink /persist/en_hdcp.bin /system/vendor/firmware/hdcp.keys
 
-# audio file access
+# audio
     mkdir /data/audio 0770 media audio
     chown media audio /data/audio
     chmod 0770 /data/audio
-# gps permissions
-# GPS GPIO Setting - refer gps_gpio.c(android\kernel\drivers\p760\misc)
+
+# GPS
     chown system system /sys/devices/platform/gps_gpio/poweron
     chown system system /sys/devices/platform/gps_gpio/reset
-# GPS UART Setting
+# GPS UART Setting 
     chown system system /dev/ttyO2
-# GPS RIL port Setting
+# GPS RIL port Setting 
     chown system system /dev/pts17
-
+# glgps & libgps & log setting
     mkdir /data/gps
     chmod 770 /data/gps
     chown system system /data/gps
     mkdir /data/gps/log
     chmod 770 /data/gps/log
-    chown system system /data/gps/log
-
+    chown system system /data/gps/log 
     mkdir /data/cache
     chmod 770 /data/cache
     chown system system /data/cache
 
-#   chown root /system/bin/glgps
+    
     chown system system /system/bin/glgps
     chown system system /system/etc/gps_brcm_conf.xml
     chown system system /system/etc/cert/
     chown system system /system/etc/cert/lge.cer
 
-    # Create dump dir and collect dumps.
-    mkdir /data/dontpanic
-    chown root system /data/dontpanic
-    chmod 0754 /data/dontpanic
-
-    # collect ramconsole data
-    copy /proc/last_kmsg /data/dontpanic/last_kmsg.txt
-    chown root log /data/dontpanic/last_kmsg.txt
-    chmod 0640 /data/dontpanic/last_kmsg.txt
-
-    # collect apanic data, free resources and re-arm trigger
-    copy /proc/apanic_console /data/dontpanic/apanic_console
-    chown root log /data/dontpanic/apanic_console
-    chmod 0640 /data/dontpanic/apanic_console
-    copy /proc/apanic_threads /data/dontpanic/apanic_threads
-    chown root log /data/dontpanic/apanic_threads
-    chmod 0640 /data/dontpanic/apanic_threads
-
-    write /proc/apanic_console 1
 # POWER
     chown system system /sys/devices/platform/omap/omap_i2c.1/i2c-1/1-0049/twl6030_bci/smpl_en
     chown system system /sys/devices/platform/omap/omap_i2c.1/i2c-1/1-0049/twl6030_bci/abnormal_wakelock_dis
@@ -130,7 +136,7 @@ on post-fs-data
     chown radio radio /sys/class/power_supply/bk_battery/voltage_now
     chmod 0664 /sys/devices/platform/omap/omap_i2c.4/i2c-4/4-0036/state
 
-# persmissions for PROXIMITY SENSOR
+# permissions for PROXIMITY SENSOR
     chown system radio /sys/devices/platform/omap/omap_i2c.3/i2c-3/3-0039/atime
     chown system radio /sys/devices/platform/omap/omap_i2c.3/i2c-3/3-0039/ptime
     chown system radio /sys/devices/platform/omap/omap_i2c.3/i2c-3/3-0039/wtime
@@ -146,29 +152,63 @@ on post-fs-data
     chown system radio /sys/devices/platform/omap/omap_i2c.3/i2c-3/3-0039/run_calibration
     chown system radio /sys/devices/platform/omap/omap_i2c.3/i2c-3/3-0039/default_crosstalk
 
-# permissions for MOTION SENSOR
-    chown system radio /sys/class/input/input0/fast_calibration_x
-    chown system radio /sys/class/input/input0/fast_calibration_y
-    chown system radio /sys/class/input/input0/fast_calibration_z
-    chown system radio /sys/class/input/input0/softreset
-    chown system radio /sys/class/input/input0/eeprom_writing
-    chown system radio /sys/class/input/input0/bandwidth
+ # Permissions for System Server and daemons.
+    chown radio system /sys/android_power/state
+    chown radio system /sys/android_power/request_state
+    chown radio system /sys/android_power/acquire_full_wake_lock
+    chown radio system /sys/android_power/acquire_partial_wake_lock
+    chown radio system /sys/android_power/release_wake_lock
+    chown radio system /sys/power/state
+    chown radio system /sys/power/wake_lock
+    chown radio system /sys/power/wake_unlock
+    chmod 0660 /sys/power/state
+    chmod 0660 /sys/power/wake_lock
+    chmod 0660 /sys/power/wake_unlock
+# LGE_CHANGE_S [juya.kim@lge.com] to reduce power consumption & overheat during video play.
+    chown radio system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+# LGE_CHANGE_E [juya.kim@lge.com] to reduce power consumption & overheat during video play.
+    chown system system /sys/class/timed_output/vibrator/enable
+    chown system system /sys/class/leds/keyboard-backlight/brightness
+    chown system system /sys/class/leds/lcd-backlight/brightness
+    chown system system /sys/class/leds/button-backlight/brightness
+    chown system system /sys/class/leds/jogball-backlight/brightness
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/red/device/grpfreq
+    chown system system /sys/class/leds/red/device/grppwm
+    chown system system /sys/class/leds/red/device/blink
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/red/device/grpfreq
+    chown system system /sys/class/leds/red/device/grppwm
+    chown system system /sys/class/leds/red/device/blink
+    chown system system /sys/class/timed_output/vibrator/enable
+    chown system system /sys/module/sco/parameters/disable_esco
 
-    chown system compass /sys/class/input/input0/delay
-    chown system compass /sys/class/input/input0/mode
-    chown system compass /sys/class/input/input0/range
-    chown system compass /sys/class/input/input0/update
-    chown system compass /sys/class/input/input1/op_mode
-    chown system compass /sys/class/input/input1/rept_xy
-    chown system compass /sys/class/input/input1/rept_z
+ #LGE_CHANGE_S 20120720, hwansuk.kang@lge.com [data] Disable IPv6 for mobile network
+ 	write /proc/sys/net/ipv6/conf/rmnet0/disable_ipv6 1
+ 	write /proc/sys/net/ipv6/conf/rment1/disable_ipv6 1
+ 	write /proc/sys/net/ipv6/conf/rmnet2/disable_ipv6 1
+ #LGE_CHANGE_E 20120720, hwansuk.kang@lge.com [data] Disable IPv6 for mobile network
 
+# Usb
+    chown system system /sys/class/android_usb/android0/f_rndis/ethaddr
+    chmod 0660 /sys/class/android_usb/android0/f_rndis/ethaddr
+
+# mpl
+    chmod 0777 /dev/mpu
+    chmod 0777 /dev/mpuirq
+    chmod 0777 /dev/timerirq
 
 # permissions for KEY
     chown radio radio /sys/devices/platform/lge-gkpd/key_test_mode
     chown radio radio /sys/devices/platform/omap/omap4-keypad/key_saving
     chown radio radio /sys/devices/platform/lge-gkpd/key_lock
 
-# BT UART2
+# UART2
     chmod 0660 /sys/class/rfkill/rfkill0/state
     chmod 0660 /sys/class/rfkill/rfkill0/type
     chmod 0660 /sys/class/rfkill/rfkill1/state
@@ -179,98 +219,22 @@ on post-fs-data
     chown bluetooth bluetooth /sys/class/rfkill/rfkill1/state
     chown bluetooth bluetooth /sys/class/rfkill/rfkill1/type
     chown bluetooth bluetooth /dev/ttyO1
-
-    chmod 0664 /sys/devices/platform/bd_address/bdaddr_if
+    
+     chmod 0664 /sys/devices/platform/bd_address/bdaddr_if
     chown radio bluetooth /sys/devices/platform/bd_address/bdaddr_if
-
+    
     setprop service.brcm.bt.btld 0
     setprop service.brcm.bt.activation 0
     setprop service.brcm.bt.srv_active 0
     setprop service.brcm.bt.hcid_active 0
     setprop sys.settings_secure_version 0
 
-# Log Service
     mkdir /data/logger 0775 system system
     chown system system /data/logger
     chmod 0771 /data/logger
 
-# HML orient
     chown system system /sys/class/mhl_orient/mhl_dev_orient/MHL_orient
 
-
-on boot
-    chmod 0666 /dev/pvrsrvkm
-# change permissions for Tiler driver
-    chmod 0777 /dev/tiler
-    chmod 0777 /dev/dmm
-# Create Directory for Secure Storage
-    mkdir /persist/smc 0770 system system
-# debugfs
-    mount debugfs /sys/kernel/debug /sys/kernel/debug
-# touch
-    chown system system /sys/devices/virtual/input/lge_touch/keyguard
-# change permissions for ION driver
-    chmod 0777 /dev/ion
-
-    chown system graphics /sys/class/graphics/fb0/overlays
-    chown system graphics /sys/class/graphics/fb0/fit_to_screen
-    chown system graphics /sys/class/graphics/fb0/overlays_rotate
-
-    chmod 0777 /dev/graphics/fb0
-    chmod 0777 /dev/graphics/fb1
-# change permissions for LCD backlight LM3530
-    chown system radio /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0038/brightness
-    chmod 0664 /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0038/brightness
-
-# change permissions for LCD backlight LM3533
-    chown system radio /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0036/brightness
-    chmod 0664 /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0036/brightness
-# change permissions for LCD Gamma Tuning
-    chown system radio /sys/devices/omapdss/display0/gamma_tuning
-    chmod 0660 /sys/devices/omapdss/display0/gamma_tuning
-
-# change permissions for LED backlight
-    chown system radio /sys/class/leds/button-backlight/br_maintain_on
-    chmod 0660 /sys/class/leds/button-backlight/br_maintain_on
-    chown system radio /sys/class/leds/button-backlight/brightness
-    chmod 0660 /sys/devices/platform/keypad_led/leds/button-backlight/brightness
-
-# usb serial
-    chmod 0777 /dev/ttyGS0
-    chmod 0777 /dev/ttyGS1
-    chmod 0777 /dev/ttyGS2
-
-# set permission misc and nv for CTS Pass
-    chown system media_rw /dev/block/platform/omap/omap_hsmmc.1/by-name/misc
-    chmod 0660 /dev/block/platform/omap/omap_hsmmc.1/by-name/misc ## misc partition
-
-    chown system media_rw /dev/block/platform/omap/omap_hsmmc.1/by-name/nv
-    chmod 0660 /dev/block/platform/omap/omap_hsmmc.1/by-name/nv ## NV partition
-
-# MUIC permission
-    chown system radio /sys/class/muic/tsu5611/state
-    chmod 0664 /sys/class/muic/tsu5611/state
-
-# USB VID permission
-    chown system system /sys/class/android_usb/android0/idVendor
-    chmod 0664 /sys/class/android_usb/android0/idVendor
-# write access permission for autorun
-    chown system system /sys/class/android_usb/android0/f_cdrom_storage/lun/cdrom_usbmode
-
-    # Create this file in case it doesn't exist, needed to switch wifi modes:
-    write /data/misc/wifi/fw_path ""
-    chmod 0666 /data/misc/wifi/fw_path
-
-    # Create this file in case it doesn't exist, needed to get wifi address:
-    write /data/misc/wifi/macAddress ""
-    chmod 0660 /data/misc/wifi/macAddress
-    chown system radio /data/misc/wifi/macAddress
-
-    ## Sensors daemon stuff
-    mkdir /data/misc/sens 2755 system compass
-
-    chown radio system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table
     chmod 0666 /sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table
@@ -281,51 +245,159 @@ on boot
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/screen_off_max_freq
     chmod 0666 /sys/devices/system/cpu/cpu0/cpufreq/screen_off_max_freq
 
-#LGE_CHANGE_S 20120228, soye.park@lge.com [data] Increase TCP Buffer Size
-    setprop net.tcp.buffersize.default 4096,87380,393216,4096,16384,110208
-    setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.umts    4094,87380,393216,4096,16384,110208
-    setprop net.tcp.buffersize.hspa    4094,87380,393216,4096,16384,110208
-    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
-    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
-#LGE_CHANGE_E 20120228, soye.park@lge.com [data] Increase TCP Buffer Size
 
-#LGE_CHANGE_S 20120720, hwansuk.kang@lge.com [data] Disable IPv6 for mobile network
-    write /proc/sys/net/ipv6/conf/rmnet0/disable_ipv6 1
-    write /proc/sys/net/ipv6/conf/rment1/disable_ipv6 1
-    write /proc/sys/net/ipv6/conf/rmnet2/disable_ipv6 1
-#LGE_CHANGE_E 20120720, hwansuk.kang@lge.com [data] Disable IPv6 for mobile network
+on early-boot
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
 
-service pvrsrvinit /vendor/bin/pvrsrvinit
-    disabled
+on boot
+    setprop rild.libpath /system/lib/lge-ril.so
+
+    chmod 0666 /dev/pvrsrvkm
+    chmod 0777 /dev/tiler
+    chmod 0777 /dev/dmm
+
+    mkdir /data/smc 0770 drmrpc drmrpc
+
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
+
+    chown system system /sys/devices/virtual/input/lge_touch/keyguard
+    chmod 0777 /dev/ion
+
+    chown system graphics /sys/class/graphics/fb0/overlays
+    chown system graphics /sys/class/graphics/fb0/fit_to_screen
+    chown system graphics /sys/class/graphics/fb0/overlays_rotate
+    chmod 0777 /dev/graphics/fb0
+    chmod 0777 /dev/graphics/fb1
+
+
+# for HiddenMenu
+    chown system system /sys/devices/platform/omapdss/display1/enabled
+    chown system system /sys/devices/platform/omapdss/display1/bestScore
+    chmod 0660 /sys/devices/platform/omapdss/display1/enabled
+    chmod 0660 /sys/devices/platform/omapdss/display1/bestScore
+
+# change permissions for LCD backlight LM3530
+    chown system radio /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0038/brightness
+    chmod 0664 /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0038/brightness
+
+# change permissions for LCD backlight LM3533
+    chown system radio /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0036/brightness
+    chmod 0664 /sys/devices/platform/omap/omap_i2c.2/i2c-2/2-0036/brightness
+
+# change permissions for LCD Gamma Tuning
+    chown system radio /sys/devices/omapdss/display0/gamma_tuning
+    chmod 0660 /sys/devices/omapdss/display0/gamma_tuning
+
+# change permissions for LED backlight
+    chown system radio /sys/class/leds/button-backlight/br_maintain_on
+    chmod 0660 /sys/class/leds/button-backlight/br_maintain_on
+    chown system radio /sys/class/leds/button-backlight/brightness
+    chmod 0660 /sys/devices/platform/keypad_led/leds/button-backlight/brightness
+
+# nfc
+    chmod 0666 /dev/pn544
+
+# usb serial
+    chmod 0777 /dev/ttyGS0
+    chmod 0777 /dev/ttyGS1
+    chmod 0777 /dev/ttyGS2
+
+# misc and nv for CTS Pass
+    chown system misc /dev/block/platform/omap/omap_hsmmc.1/by-name/misc
+    chmod 0660 /dev/block/platform/omap/omap_hsmmc.1/by-name/misc ## misc partition
+
+    chown system misc /dev/block/platform/omap/omap_hsmmc.1/by-name/nv
+    chmod 0660 /dev/block/platform/omap/omap_hsmmc.1/by-name/nv ## NV partition
+
+# MUIC
+    chown system radio /sys/class/muic/tsu5611/state
+    chmod 0664 /sys/class/muic/tsu5611/state
+    
+# USB VID
+    chown system system /sys/class/android_usb/android0/idVendor    
+    chmod 0664 /sys/class/android_usb/android0/idVendor
+
+# write access permission for drive emulation
+    chown system system /sys/class/android_usb/android0/f_cdrom_storage/lun/cdrom_usbmode
+
+    mkdir /dvp/rysh 0770 system divxdrm
+    chown media divxdrm /dvp/rysh
+    chmod 0770 /dvp/rysh
+
+    mkdir /dvp/ooda 0770 system divxdrm
+    chown media divxdrm /dvp/ooda
+    chmod 0770 /dvp/ooda
+
+    mkdir /dvp/ssamu system divxdrm
+    chown media divxdrm /dvp/ssamu
+    chmod 0770 /dvp/ssamu
+
+# widevine drm keybox repository
+    mkdir /dvp/jjn 0770 drm system
+
+    chown system system /dvp
+    chmod 0771 /dvp
+
+# TI sdram frequency set problem work around
+# Temporarily adjust CPU frequency and reset to (performance) interactive
+     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor userspace
+     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed 800000
+     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+
+on charger
+    # disable second core while charging (cpufreq gets handled by charger blob)
+    write /sys/devices/system/cpu/cpu1/online 0
+
+service charger /charger
+    class charger
     user root
     group root
     oneshot
 
+service spritebud /system/xbin/spritebud
+    class main
+    socket spritebud stream 660 root radio
+    user root
+    group root
+
+#service lgdrm /system/bin/lgdrmserver
+#    class main
+#    user root
+#    group lgdrm_acc sdcard_rw media_rw system radio
+
+# restart when servicemanager is restarted
+#on property:init.svc.servicemanager=restarting
+#     restart lgdrm
+
+service hciattach /system/bin/brcm_patchram_plus --enable_hci --no2bytes --enable_lpm \
+	--scopcm=0,4,0,1,1,0,0,3,3,0  --baudrate 3000000 --use_baudrate_for_download \
+	--tosleep 50000 --patchram /system/bin/BCM4330B1_002.001.003.0750.0865.hcd /dev/ttyO1
+	class main
+	user bluetooth
+	group bluetooth net_bt_admin
+	disabled
+	oneshot
+
+service pvrsrvinit /vendor/bin/pvrsrvinit
+    class core
+    user root
+    group root
+    oneshot
+
+# service for BMC050(accelerometer & compass sensor)
 service sensord /system/bin/sensord
-    user system
-    group compass misc input
+# user compass
+# group compass misc input
     class main
     oneshot
 
-service lgsecclk /system/bin/lgsecclkserver
+# Immersion changes
+service immvibed /system/bin/immvibed_qcoin
     class main
-    user system
-    group system lgdrm_acc sdcard_rw media_rw
-
-# restart when servicemanager is restarted
-on property:init.svc.servicemanager=restarting
-     restart lgsecclk
-
-service lgdrm /system/bin/lgdrmserver
-    class main
-    user lgdrm
-    group lgdrm_acc sdcard_rw media_rw system radio
-
-# restart when servicemanager is restarted
-on property:init.svc.servicemanager=restarting
-     restart lgdrm
+    user shell
+    group shell
+    oneshot
 
 service p2p_supplicant /system/bin/wpa_supplicant \
 -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
@@ -359,65 +431,71 @@ service wpa_supplicant /system/bin/wpa_supplicant \
         disabled
         oneshot
 
-    class main
-    socket wpa_wlan0 dgram 660 wifi wifi
-    disabled
-    oneshot
-    
-service dhcpcd_wlan0 /system/bin/dhcpcd -aABKG
-    class main
-    disabled
-    oneshot
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+	class main
+	disabled
+	oneshot
 
-service dhcpcd_p2p /system/bin/dhcpcd -aBKLG
+service iprenew_wlan0 /system/bin/dhcpcd -n
+	class main
+	disabled
+	oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -aABKL
+	class main
+	disabled
+	oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+	class main
+	disabled
+	oneshot
+
+service dhcpcd_eth0 /system/bin/dhcpcd -ABKL
+	class main
+	disabled
+	oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+	class main
+	disabled
+	oneshot
+
+service iprenew_bnep0 /system/bin/dhcpcd -n
+	class main
+	disabled
+	oneshot
+
+service hostapd_bin /system/bin/hostapd -d /data/misc/wifi/hostapd.conf
+	socket wpa_wlan0 dgram 660 wifi wifi
+	class main
+	disabled
+	oneshot
+
+on property:init.svc.smc_pa=stopped
+	start tf_daemon
+
+on property:wlan.driver.status=ok
+    chown wifi wifi /sys/devices/platform/wl1271/bt_coex_state
+
+service ap_at_command /system/bin/ap_at_command
     class main
-    disabled
-    oneshot
-
-service iprenew_wlan0 /system/bin/dhcpcd -nK
-    class main
-    disabled
-    oneshot
-
-service iprenew_p2p /system/bin/dhcpcd -nK
-    class main
-    disabled
-    oneshot
-
-service hostapd /system/bin/hostapd -dddd /data/misc/wifi/hostapd.conf
-     class main
-     group system wifi inet
-     socket wpa_wlan1 dgram 660 wifi wifi
-     oneshot
-     disabled
-
-# GPS
-service glgps /system/bin/glgps -c /system/etc/gps_brcm_conf.xml
-    class main
-    user system
-    group net_raw sdcard_rw system radio
-
-# create virtual SD card at /mnt/sdcard, based on the /data/media directory
-# daemon will drop to user/group system/media_rw after initializing
-# underlying files in /data/media will be created with user and group media_rw (1023)
-# FUSE daemon
-#service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
-#    class late_start
-#    oneshot
+    user root
+    group system input graphics media_rw sdcard_rw
 
 service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
     class late_start
     disabled
 
-#service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
-#    class late_start
-#    disabled
- 
- 
+service glgps /system/bin/glgps -c /system/etc/gps_brcm_conf.xml
+    class main
+    user system
+    group net_raw sdcard_rw system radio
 
-## Set the wifi mac address
-on property:dev.bootcomplete=1
-    exec /system/bin/wifimac
+
+service wifimac /system/bin/wifimac
+    class main
+    oneshot
 
 # Sdcard
     write /sys/block/mmcblk0/bdi/read_ahead_kb 2048
@@ -426,30 +504,6 @@ on property:dev.bootcomplete=1
     write /sys/devices/system/cpu/cpu0/cpufreq/screen_off_max_freq 600000
 
 on property:dev.bootcomplete=1
-
 chmod 755 /mnt/asec
 echo "/dev/block/vold/179:61" > /sys/devices/virtual/android_usb/android0/f_mass_storage/lun0/file
-
-
-
-service charger /charger
-    class charger
-    user root
-    group root
-    oneshot
-
-    mount -o remount,rw /system
-rm -f /system/bin/auditd
-
-
-chmod 666 /dev/frandom
-
-mv /dev/random /dev/random.ori
-ln /dev/frandom /dev/random
-chmod 666 /dev/random
-
-mv /dev/urandom /dev/urandom.ori
-ln /dev/frandom /dev/urandom
-chmod 666 /dev/urandom
-mount -o remount,ro /system
 
