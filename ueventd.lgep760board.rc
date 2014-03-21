@@ -1,6 +1,9 @@
 # TI changes for FM application
 /dev/tihci                0666   root       root
 
+#for FM v4l2 Radio
+/dev/radio0               0600   fmradio   fmradio
+
 # LGE_SPECIFIC
 /dev/apds_9900            0666   system     system
 

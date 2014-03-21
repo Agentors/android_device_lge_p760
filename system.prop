@@ -7,6 +7,7 @@
 
 ## Wifi interface name
 wifi.interface=wlan0
+wifi.features=p2p
 
 # hold precise GC data, and use SMP
 dalvik.vm.dexopt-flags=m=y,u=n

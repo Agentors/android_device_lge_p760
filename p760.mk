@@ -109,12 +109,8 @@ PRODUCT_COPY_FILES += \
 $(LOCAL_PATH)/fs/system/apk/com.bigeyes0x0.trickstermod.apk:system/app/com.bigeyes0x0.trickstermod.apk \
 $(LOCAL_PATH)/fs/system/etc/init.d/55frandom:system/etc/init.d/55frandom
 
-# Sgx modules
-PRODUCT_COPY_FILES += \
-device/lge/p760/system/lib/mdoules/pvrsrvkm_sgx540_120.ko:system/lib/modules/pvrsrvkm_sgx540_120.ko
-
-FRAMEWORKS_BASE_SUBDIRS += \
-	$(addsuffix /java, omapmmlib )
+#FRAMEWORKS_BASE_SUBDIRS += \
+#	$(addsuffix /java, omapmmlib )
 
 #FRAMEWORKS_BASE_SUBDIRS += \
 #	../../$(LOCAL_PATH)/framework-addons/

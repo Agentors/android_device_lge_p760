@@ -32,8 +32,8 @@ BUILD_FM_RADIO := true
 FM_CHR_DEV_ST := true
 BUILD_TI_FM_APPS := true
 # Try to build the kernel
-TARGET_KERNEL_CONFIG := ArturZaleski_p760_defconfig
-TARGET_KERNEL_SOURCE := kernel/lge/p760
+TARGET_KERNEL_CONFIG := cyanogenmod_p760_defconfig
+TARGET_KERNEL_SOURCE := kernel/lge/omap4-common
 #TARGET_PREBUILT_KERNEL := device/lge/p760/kernel
 
 
@@ -100,12 +100,12 @@ BOARD_HAS_VIBRATOR_IMPLEMENTATION := ../../device/lge/p760/vibrator.c
 COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB  -DNEEDS_VECTORIMPL_SYMBOLS -DHAVE_FM_RADIO -DFORCE_SCREENSHOT_CPU_PATH
 
 
-#KERNEL_SGX_MODULES:
-#	make -C device/lge/p760/sgx-module/eurasia_km/eurasiacon/build/linux2/omap4430_android/ O=$(KERNEL_OUT) KERNELDIR=$(ANDROID_BUILD_TOP)/$(KERNEL_SRC) ARCH="arm" $(ARM_CROSS_COMPILE) KERNEL_CROSS_COMPILE=$(ARM_CROSS_COMPILE) TARGET_PRODUCT="blaze_tablet" BUILD=release TARGET_SGX=540 PLATFORM_VERSION=4.0
-#	mkdir -p $(TARGET_OUT)/modules/
-#	mv $(OUT)/target/*sgx540_120.ko $(TARGET_OUT)/modules/
+KERNEL_SGX_MODULES:
+	make -C device/lge/p760/sgx-module/eurasia_km/eurasiacon/build/linux2/omap4430_android/ O=$(KERNEL_OUT) KERNELDIR=$(ANDROID_BUILD_TOP)/$(KERNEL_SRC) ARCH="arm" $(ARM_CROSS_COMPILE) KERNEL_CROSS_COMPILE=$(ARM_CROSS_COMPILE) TARGET_PRODUCT="blaze_tablet" BUILD=release TARGET_SGX=540 PLATFORM_VERSION=4.0
+	mkdir -p $(TARGET_OUT)/modules/
+	mv $(OUT)/target/*sgx540_120.ko $(TARGET_OUT)/modules/
 
-#TARGET_KERNEL_MODULES := KERNEL_SGX_MODULES
+TARGET_KERNEL_MODULES := KERNEL_SGX_MODULES
 
 ## Radio fixes
 BOARD_RIL_CLASS := ../../../device/lge/p760/ril/
