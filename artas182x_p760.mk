@@ -24,6 +24,8 @@
 TARGET_SCREEN_HEIGHT := 960
 TARGET_SCREEN_WIDTH := 540
 
+# Inherit FML configuration
+$(call inherit-product, vendor/artas182x/config/common.mk)
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 # Inherit from u2-common device
@@ -33,7 +35,7 @@ $(call inherit-product, vendor/lge/u2/u2-vendor-ducati.mk)
 $(call inherit-product, vendor/lge/u2/p760-vendor-nfc.mk)
 
 # Set those variables here to overwrite the inherited values.
-PRODUCT_NAME := full_p760
+PRODUCT_NAME := artas182x_p760
 PRODUCT_BRAND := lg
 PRODUCT_DEVICE := p760
 PRODUCT_MODEL := LG-P760
